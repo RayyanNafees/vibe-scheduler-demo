@@ -1,0 +1,7 @@
+{
+  "name": "ZHCET Scheduler",
+  "description": "A beautiful and intuitive timetable generator for engineering students. Parse PDFs or manually input subjects to create aesthetically pleasing schedules with AI-powered themes.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
