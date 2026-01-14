@@ -8,6 +8,7 @@ interface TimetableStore extends TimetableState {
   updateSubject: (id: string, updates: Partial<Subject>) => void;
   removeSubject: (id: string) => void;
   setSubjects: (subjects: Subject[]) => void;
+  reorderSubjects: (oldIndex: number, newIndex: number) => void;
   setScheduleCell: (day: string, slot: string, subjectId: string | null) => void;
   setInterval: (val: number) => void;
   setStartDay: (day: string) => void;
@@ -53,6 +54,13 @@ export const useTimetableStore = create<TimetableStore>((set) => ({
   })),
 
   setSubjects: (subjects) => set({ subjects }),
+
+  reorderSubjects: (oldIndex, newIndex) => set((state) => {
+    const newSubjects = [...state.subjects];
+    const [removed] = newSubjects.splice(oldIndex, 1);
+    newSubjects.splice(newIndex, 0, removed);
+    return { subjects: newSubjects };
+  }),
 
   setScheduleCell: (day, slot, subjectId) => set((state) => {
     const newSchedule = { ...state.schedule };

@@ -13,7 +13,7 @@ const App: React.FC = () => {
       <main className="max-w-7xl mx-auto pb-32">
         <Hero />
         
-        <div className="space-y-24">
+        <div className="space-y-32">
           <FileUpload />
           <SubjectEntry />
           <TimetableGrid />
@@ -23,14 +23,14 @@ const App: React.FC = () => {
 
       <Lightroom />
 
-      <footer className="py-12 border-t border-zinc-900 bg-zinc-950">
-        <div className="max-w-7xl mx-auto px-4 text-center space-y-4">
-          <h3 className="text-xl font-bold font-handwritten">ZHCET Scheduler</h3>
-          <p className="text-zinc-500 text-sm">Made with Gemini AI for Aligarh Muslim University Students</p>
-          <div className="flex justify-center gap-6 text-zinc-600 text-sm">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Help</a>
+      <footer className="py-16 border-t border-zinc-900/50 bg-zinc-950">
+        <div className="max-w-7xl mx-auto px-4 text-center space-y-6">
+          <h3 className="text-2xl font-bold font-handwritten bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">ZHCET Scheduler</h3>
+          <p className="text-zinc-500 text-sm font-medium">Made with Gemini AI for Aligarh Muslim University Students</p>
+          <div className="flex justify-center gap-8 text-zinc-600 text-sm">
+            <a href="#" className="hover:text-blue-400 transition-colors">Privacy</a>
+            <a href="#" className="hover:text-blue-400 transition-colors">Terms</a>
+            <a href="#" className="hover:text-blue-400 transition-colors">Help</a>
           </div>
         </div>
       </footer>
