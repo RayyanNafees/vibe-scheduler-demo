@@ -20,14 +20,18 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useTimetableStore } from '../store';
 import { Subject } from '../types';
+import { Combobox } from './Combobox';
 
 interface SortableSubjectRowProps {
   sub: Subject;
   onUpdate: (id: string, updates: Partial<Subject>) => void;
   onRemove: (id: string) => void;
+  profOptions: string[];
+  roomOptions: string[];
+  onAddRoom: (room: string) => void;
 }
 
-const SortableSubjectRow: React.FC<SortableSubjectRowProps> = ({ sub, onUpdate, onRemove }) => {
+const SortableSubjectRow: React.FC<SortableSubjectRowProps> = ({ sub, onUpdate, onRemove, profOptions, roomOptions, onAddRoom }) => {
   const {
     attributes,
     listeners,
@@ -70,18 +74,28 @@ const SortableSubjectRow: React.FC<SortableSubjectRowProps> = ({ sub, onUpdate, 
         onChange={(e) => onUpdate(sub.id, { name: e.target.value })}
         className="flex-[2] min-w-[150px] bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none placeholder:text-zinc-700"
       />
-      <input
-        placeholder="Prof"
-        value={sub.prof}
-        onChange={(e) => onUpdate(sub.id, { prof: e.target.value })}
-        className="flex-1 min-w-[100px] bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none placeholder:text-zinc-700"
-      />
-      <input
-        placeholder="Room"
-        value={sub.room}
-        onChange={(e) => onUpdate(sub.id, { room: e.target.value })}
-        className="flex-1 min-w-[80px] bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none placeholder:text-zinc-700"
-      />
+      
+      <div className="flex-[1.5] min-w-[140px]">
+        <Combobox
+          placeholder="Professor"
+          value={sub.prof}
+          onChange={(val) => onUpdate(sub.id, { prof: val })}
+          options={profOptions.length > 0 ? profOptions : ["Add manually..."]}
+        />
+      </div>
+
+      <div className="flex-1 min-w-[120px]">
+        <Combobox
+          placeholder="Room"
+          value={sub.room}
+          onChange={(val) => {
+            onUpdate(sub.id, { room: val });
+            onAddRoom(val);
+          }}
+          options={roomOptions}
+        />
+      </div>
+
       <input
         type="color"
         value={sub.color}
@@ -100,7 +114,7 @@ const SortableSubjectRow: React.FC<SortableSubjectRowProps> = ({ sub, onUpdate, 
 };
 
 export const SubjectEntry: React.FC = () => {
-  const { subjects, addSubject, updateSubject, removeSubject, reorderSubjects } = useTimetableStore();
+  const { subjects, addSubject, updateSubject, removeSubject, reorderSubjects, professors, classroomsList, addClassroom } = useTimetableStore();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -142,6 +156,9 @@ export const SubjectEntry: React.FC = () => {
                   sub={sub} 
                   onUpdate={updateSubject} 
                   onRemove={removeSubject} 
+                  profOptions={professors}
+                  roomOptions={classroomsList}
+                  onAddRoom={addClassroom}
                 />
               ))}
             </div>

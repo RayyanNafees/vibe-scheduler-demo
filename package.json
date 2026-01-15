@@ -12,6 +12,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "zustand": "^5.0.10",
+    "swr": "^2.2.4",
     "@google/genai": "^1.36.0",
     "lucide-react": "^0.562.0",
     "@dnd-kit/core": "^6.1.0",

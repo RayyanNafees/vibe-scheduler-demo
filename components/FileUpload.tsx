@@ -1,17 +1,67 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import useSWR from 'swr';
 import { Upload, Sparkles, Loader2 } from 'lucide-react';
 import { parseScheduleFile } from '../geminiService';
 import { useTimetableStore } from '../store';
 import { Combobox } from './Combobox';
 
-const DEPTS = ["Computer Engineering", "Mechanical Engineering", "Civil Engineering", "Electronics Engineering", "Electrical Engineering", "Applied Physics", "Applied Chemistry", "Applied Mathematics"];
-const BRANCHES = ["B.Tech CS", "B.Tech ME", "B.Tech CE", "B.Tech EE", "B.Tech EC", "M.Tech", "PhD", "B.Arch"];
-const ROOMS = ["Lecture Hall 1", "Lecture Hall 2", "Drawing Hall", "CS Lab 1", "ME Lab 3", "Room 101", "Room 204", "Seminar Room"];
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export const FileUpload: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
-  const { setSubjects, department, branch, classroom, setMetadata } = useTimetableStore();
+  const { 
+    setSubjects, 
+    department, 
+    branch, 
+    classroom, 
+    setMetadata, 
+    selectedDeptSlug,
+    setDeptData,
+    departments,
+    setDepartmentsList,
+    branches,
+    setBranchesList,
+    setProfessorsList,
+    classroomsList,
+    addClassroom
+  } = useTimetableStore();
+
+  // 1. Fetch all departments on load
+  const { data: deptListData } = useSWR(
+    departments.length === 0 ? 'https://api.amu.ac.in/api/v1/department-list?lang=en' : null,
+    fetcher
+  );
+
+  useEffect(() => {
+    if (deptListData?.data) {
+      setDepartmentsList(deptListData.data.map((d: any) => ({ title: d.title, slug: d.slug })));
+    }
+  }, [deptListData, setDepartmentsList]);
+
+  // 2. Correct Fetch branches when department changes - using the new slug pattern
+  const { data: branchData } = useSWR(
+    selectedDeptSlug ? `https://api.amu.ac.in/api/v1/department-list-data?lang=en&slug=department/${selectedDeptSlug}/under-graduate` : null,
+    fetcher
+  );
+
+  useEffect(() => {
+    if (branchData?.data?.data) {
+      setBranchesList(branchData.data.data.map((item: any) => item.name));
+    }
+  }, [branchData, setBranchesList]);
+
+  // 3. Fetch professors when department changes
+  const { data: profData } = useSWR(
+    selectedDeptSlug ? `https://api.amu.ac.in/api/v1/department-list-data?lang=en&slug=department/${selectedDeptSlug}/faculty-members` : null,
+    fetcher
+  );
+
+  useEffect(() => {
+    if (profData?.data?.data) {
+      setProfessorsList(profData.data.data.map((p: any) => `${p.first_name} ${p.middle_name || ''} ${p.last_name}`.replace(/\s+/g, ' ').trim()));
+    }
+  }, [profData, setProfessorsList]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,6 +90,24 @@ export const FileUpload: React.FC = () => {
       console.error(err);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const departmentOptions = departments.map(d => d.title);
+
+  const handleDeptChange = (title: string) => {
+    const dept = departments.find(d => d.title === title);
+    if (dept) {
+      setDeptData(dept.slug, dept.title);
+    } else {
+      setMetadata('department', title);
+    }
+  };
+
+  const handleClassroomChange = (val: string) => {
+    setMetadata('classroom', val);
+    if (!classroomsList.includes(val)) {
+      addClassroom(val);
     }
   };
 
@@ -76,16 +144,16 @@ export const FileUpload: React.FC = () => {
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-widest text-zinc-600 ml-1">Department</label>
           <Combobox 
-            options={DEPTS} 
+            options={departmentOptions} 
             value={department} 
-            onChange={(val) => setMetadata('department', val)} 
+            onChange={handleDeptChange} 
             placeholder="Select Department" 
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-widest text-zinc-600 ml-1">Branch</label>
+          <label className="text-xs font-bold uppercase tracking-widest text-zinc-600 ml-1">Branch / Program</label>
           <Combobox 
-            options={BRANCHES} 
+            options={branches.length > 0 ? branches : (selectedDeptSlug ? ["Fetching..."] : ["Select Dept first"])} 
             value={branch} 
             onChange={(val) => setMetadata('branch', val)} 
             placeholder="Select Branch" 
@@ -94,9 +162,9 @@ export const FileUpload: React.FC = () => {
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-widest text-zinc-600 ml-1">Classroom</label>
           <Combobox 
-            options={ROOMS} 
+            options={classroomsList}
             value={classroom} 
-            onChange={(val) => setMetadata('classroom', val)} 
+            onChange={handleClassroomChange} 
             placeholder="Select Room" 
           />
         </div>
